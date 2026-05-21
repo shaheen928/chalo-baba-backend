@@ -16,7 +16,7 @@ const port = process.env.PORT
 
 const app = express()
 
-app.use(cors({origin: true,credentials: true}))
+app.use(cors({origin: 'https://chalo-baba.vercel.app',credentials: true}))
 
 app.use(express.json())
 app.use(express.urlencoded({extended:true}))
