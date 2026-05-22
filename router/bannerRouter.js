@@ -1,5 +1,4 @@
-import fs from "fs";
-import path from "path";
+import { v2 as cloudinary } from 'cloudinary';
 
 import express from 'express'
 import asyncHandler from 'express-async-handler';
@@ -16,29 +15,25 @@ bannerRouter.route('/').get( asyncHandler(async (req,res) => {
 .post(protect,admin,asyncHandler(async (req,res) => {
   const {title,subtitle,image,link} = req.body;
   const banner = new Banner({title,subtitle, image,link: link || ''})
-  const createBanner = banner.save();
+  const createBanner = await banner.save();
   res.status(201).json(createBanner)
 }))
 bannerRouter.route('/:id').delete(protect,admin,asyncHandler(async (req,res) => {
   const banner = await Banner.findById(req.params.id)
   if(banner) {
 
-
-
- const __dirname = path.resolve();
-    const imageRelativePath = banner.image.startsWith("/")
-      ? banner.image.substring(1)
-      : banner.image;
-    const oldImagePath = path.join(__dirname, imageRelativePath);
-    if (fs.existsSync(oldImagePath)) {
+    if (banner.image && banner.image.includes('cloudinary.com')) {
       try {
-        fs.unlinkSync(oldImagePath);
-      } catch (error) {
-        console.error("error deleting file ", error);
+         const urlParts = banner.image.split('/');
+        const folderAndFileName = urlParts.slice(-2).join('/');  
+        const publicId = folderAndFileName.split('.')[0];  
+
+         await cloudinary.uploader.destroy(publicId);
+        console.log('Image deleted from Cloudinary successfully');
+      } catch (cloudinaryError) {
+        console.error('Cloudinary image delete failed:', cloudinaryError);
       }
     }
-
-
 
     await Banner.deleteOne({_id: req.params.id})
     res.json({message: 'Banner removed successfully'})

@@ -1,6 +1,5 @@
-import fs from "fs";
-import path from "path";
-
+ 
+import { v2 as cloudinary } from 'cloudinary';
 import asyncHandlar from "express-async-handler";
 import Product from "../models/productModel.js";
 
@@ -59,7 +58,7 @@ export const createProduct = asyncHandlar(async (req, res) => {
     name: "Sample name",
     price: 0,
     user: req.user._id,
-    image: "/images/sample.jpg",
+    image: "https://placehold.co/600x400?text=Chalo+Baba+Product",
     brand: "Sample brand",
     category: "Sample category",
     countInStock: 0,
@@ -75,13 +74,7 @@ export const updateProduct = asyncHandlar(async (req, res) => {
     req.body;
   const product = await Product.findById(req.params.id);
   if (product) {
-    if (product.image !== image && product.image.startsWith("/uploads")) {
-      const __dirname = path.resolve();
-      const oldImagePath = path.join(__dirname, product.image);
-      if (fs.existsSync(oldImagePath)) {
-        fs.unlinkSync(oldImagePath);
-      }
-    }
+     
     product.name = name;
     product.price = price;
     product.description = description;
@@ -101,18 +94,24 @@ export const updateProduct = asyncHandlar(async (req, res) => {
 export const deleteProduct = asyncHandlar(async (req, res) => {
   const product = await Product.findById(req.params.id);
   if (product) {
-    const __dirname = path.resolve();
-    const imageRelativePath = product.image.startsWith("/")
-      ? product.image.substring(1)
-      : product.image;
-    const oldImagePath = path.join(__dirname, imageRelativePath);
-    if (fs.existsSync(oldImagePath)) {
+
+
+     
+    if (product.image && product.image.includes('cloudinary.com')) {
       try {
-        fs.unlinkSync(oldImagePath);
-      } catch (error) {
-        console.error("error deleting file ", error);
+         const urlParts = product.image.split('/');
+        const folderAndFileName = urlParts.slice(-2).join('/');  
+        const publicId = folderAndFileName.split('.')[0];  
+
+         await cloudinary.uploader.destroy(publicId);
+        console.log('Image deleted from Cloudinary successfully');
+      } catch (cloudinaryError) {
+        console.error('Cloudinary image delete failed:', cloudinaryError);
       }
     }
+
+
+   
     await Product.deleteOne({ _id: product._id });
     res.json({ message: "Product has deleted" });
   } else {
