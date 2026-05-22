@@ -1,7 +1,6 @@
 import express from 'express';
  
-import { upload } from '../config/cloudinary.js';  
-
+import { upload } from '../utils/cloudinary.js';
 const router = express.Router();
 
  
