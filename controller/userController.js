@@ -151,7 +151,7 @@ export const updateUserProfile = asyncHandler(async (req, res) => {
 });
 
 export const getUsers = asyncHandler(async (req, res) => {
-  const users = await User.find({});
+  const users = await User.find({}).sort({createdAt: -1});
   res.json(users);
 });
 

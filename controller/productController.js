@@ -49,7 +49,7 @@ export const getProductById = asyncHandlar(async (req, res) => {
 });
 
 export const getAdminProducts = asyncHandlar(async (req, res) => {
-  const adminProducts = await Product.find({});
+  const adminProducts = await Product.find({}).sort({createdAt : -1 });
   res.json(adminProducts);
 });
 
